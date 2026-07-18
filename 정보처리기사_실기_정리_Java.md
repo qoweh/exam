@@ -1,7 +1,104 @@
 # 정보처리기사 실기 Java — 선택 문제와 시험 문법 노트
 
 선택한 원문 번호: 7, 13, 18, 23, 24, 28, 32, 36, 40, 44  
+추가 외부문제: 배열 참조와 String 매개변수  
 중복 코드: 선택한 Java 문제끼리는 중복 없음
+
+---
+
+## 외부문제 — 배열 참조와 String 매개변수
+
+```java
+public class Main {
+    public static void change(String[] data, String s) {
+        data[0] = s;
+        s = "Z";
+    }
+
+    public static void main(String[] args) {
+        String data[] = { "A" };
+        String s = "B";
+
+        change(data, s);
+        System.out.println(data[0] + s);
+    }
+}
+```
+
+정답
+
+```text
+BB
+```
+
+풀이
+
+Java는 메서드 호출 시 매개변수에 값을 복사해서 전달한다. 참조형도 예외가 아니며, 객체 자체가 넘어가는 것이 아니라 객체를 가리키는 참조값이 복사되어 넘어간다.
+
+|단계|`data[0]`|`main`의 `s`|`change`의 `s`|설명|
+|---|---:|---:|---:|---|
+|초기값|`"A"`|`"B"`|-|`data` 배열의 첫 칸은 `"A"`, 변수 `s`는 `"B"`를 가리킨다.|
+|`change(data, s)` 호출|`"A"`|`"B"`|`"B"`|배열 참조값과 문자열 참조값이 매개변수로 복사된다.|
+|`data[0] = s;`|`"B"`|`"B"`|`"B"`|배열 객체의 0번 칸을 바꾸므로 `main`의 `data[0]`도 바뀐다.|
+|`s = "Z";`|`"B"`|`"B"`|`"Z"`|매개변수 `s`만 새 문자열을 가리키게 된다. `main`의 `s`는 바뀌지 않는다.|
+|출력|`"B"`|`"B"`|-|`data[0] + s`는 `"B" + "B"`가 된다.|
+
+핵심은 `data[0] = s`는 배열 객체 내부를 변경하지만, `s = "Z"`는 지역 변수인 매개변수 `s`가 가리키는 대상만 바꾼다는 점이다. 따라서 `change`가 끝난 뒤에도 `main`의 `s`는 `"B"` 그대로이고, 출력은 `BB`가 된다.
+
+---
+
+## 문제 44 — 인스턴스 메서드 오버라이딩과 static 메서드 숨김
+
+```java
+class Parent {
+    int x(int i) {
+        return i + 2;
+    }
+
+    static String id() {
+        return "P";
+    }
+}
+
+class Child extends Parent {
+    int x(int i) {
+        return i + 3;
+    }
+
+    int x(String s) {
+        return s.length();
+    }
+
+    static String id() {
+        return "C";
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent ref = new Child();
+        System.out.println(ref.x(2) + ref.id());
+    }
+}
+```
+
+정답
+
+```text
+5P
+```
+
+풀이
+
+`ref`의 선언 타입은 `Parent`, 실제 객체는 `Child`다.
+
+|식|결과|이유|
+|---|---|---|
+|`ref.x(2)`|5|인스턴스 메서드는 오버라이딩되어 실제 객체 `Child`의 `x(int)`가 실행된다.|
+|`ref.id()`|`"P"`|`static` 메서드는 오버라이딩이 아니라 숨김이며, 선언 타입 `Parent` 기준으로 선택된다.|
+|`5 + "P"`|`"5P"`|문자열과 더하면 문자열 연결이 된다.|
+
+`Child`의 `x(String)`은 인수 타입이 다르므로 오버로딩일 뿐이고, `ref.x(2)`에는 관여하지 않는다.
 
 ---
 
@@ -440,61 +537,6 @@ B0
 |`print(Object a)`|모든 `T`는 `Object`이므로 선택됨|
 
 따라서 `print(Object a)`가 실행되어 `B0`이 출력된다.
-
----
-
-## 문제 44 — 인스턴스 메서드 오버라이딩과 static 메서드 숨김
-
-```java
-class Parent {
-    int x(int i) {
-        return i + 2;
-    }
-
-    static String id() {
-        return "P";
-    }
-}
-
-class Child extends Parent {
-    int x(int i) {
-        return i + 3;
-    }
-
-    int x(String s) {
-        return s.length();
-    }
-
-    static String id() {
-        return "C";
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        Parent ref = new Child();
-        System.out.println(ref.x(2) + ref.id());
-    }
-}
-```
-
-정답
-
-```text
-5P
-```
-
-풀이
-
-`ref`의 선언 타입은 `Parent`, 실제 객체는 `Child`다.
-
-|식|결과|이유|
-|---|---|---|
-|`ref.x(2)`|5|인스턴스 메서드는 오버라이딩되어 실제 객체 `Child`의 `x(int)`가 실행된다.|
-|`ref.id()`|`"P"`|`static` 메서드는 오버라이딩이 아니라 숨김이며, 선언 타입 `Parent` 기준으로 선택된다.|
-|`5 + "P"`|`"5P"`|문자열과 더하면 문자열 연결이 된다.|
-
-`Child`의 `x(String)`은 인수 타입이 다르므로 오버로딩일 뿐이고, `ref.x(2)`에는 관여하지 않는다.
 
 ---
 
